@@ -29,19 +29,26 @@ const events: EventRec[] = [
   },
 ];
 
-const rsvps = new Map<string, { eventId: string; email: string; name: string }[]>();
+const rsvps = new Map<
+  string,
+  { eventId: string; email: string; name: string }[]
+>();
 
 export const listEvents: RequestHandler = (_req, res) => {
   res.json({ items: events });
 };
 
-const rsvpSchema = z.object({ name: z.string().min(1), email: z.string().email() });
+const rsvpSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+});
 export const rsvpEvent: RequestHandler = (req, res) => {
   const { id } = req.params;
   const ev = events.find((e) => e.id === id);
   if (!ev) return res.status(404).json({ error: "Event not found" });
   const body = rsvpSchema.safeParse(req.body);
-  if (!body.success) return res.status(400).json({ error: body.error.flatten() });
+  if (!body.success)
+    return res.status(400).json({ error: body.error.flatten() });
   const arr = rsvps.get(id) || [];
   arr.push({ eventId: id, email: body.data.email, name: body.data.name });
   rsvps.set(id, arr);
@@ -76,5 +83,8 @@ export const icsForEvent: RequestHandler = (req, res) => {
 };
 
 function escapeText(text: string) {
-  return text.replace(/[\\;,\n]/g, (m) => ({ "\\": "\\\\", ";": "\\;", ",": "\\,", "\n": "\\n" }[m]!));
+  return text.replace(
+    /[\\;,\n]/g,
+    (m) => ({ "\\": "\\\\", ";": "\\;", ",": "\\,", "\n": "\\n" })[m]!,
+  );
 }

@@ -32,7 +32,12 @@ export const listBlogs: RequestHandler = (req, res) => {
   const q = (req.query.q as string | undefined)?.toLowerCase();
   const tag = req.query.tag as string | undefined;
   let data = posts;
-  if (q) data = data.filter((p) => [p.title, p.company, p.role, p.author, p.content].some((s) => s.toLowerCase().includes(q)));
+  if (q)
+    data = data.filter((p) =>
+      [p.title, p.company, p.role, p.author, p.content].some((s) =>
+        s.toLowerCase().includes(q),
+      ),
+    );
   if (tag) data = data.filter((p) => p.tags.includes(tag));
   res.json({ items: data });
 };
@@ -47,7 +52,8 @@ const createSchema = z.object({
 });
 export const createBlog: RequestHandler = (req, res) => {
   const body = createSchema.safeParse(req.body);
-  if (!body.success) return res.status(400).json({ error: body.error.flatten() });
+  if (!body.success)
+    return res.status(400).json({ error: body.error.flatten() });
   const d = body.data as z.infer<typeof createSchema>;
   const post: BlogPost = {
     id: String(blogCounter++),

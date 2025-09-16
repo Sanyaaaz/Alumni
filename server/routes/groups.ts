@@ -1,11 +1,25 @@
 import type { RequestHandler } from "express";
 
-interface Group { id: string; name: string; description: string; }
-interface Message { id: string; groupId: string; sender: string; text: string; ts: number }
+interface Group {
+  id: string;
+  name: string;
+  description: string;
+}
+interface Message {
+  id: string;
+  groupId: string;
+  sender: string;
+  text: string;
+  ts: number;
+}
 
 const groups: Group[] = [
   { id: "g1", name: "Batch of 2018", description: "All 2018 graduates" },
-  { id: "g2", name: "Company: Google", description: "Interview prep and referrals" },
+  {
+    id: "g2",
+    name: "Company: Google",
+    description: "Interview prep and referrals",
+  },
 ];
 
 const messages: Message[] = [];
@@ -23,8 +37,15 @@ export const listMessages: RequestHandler = (req, res) => {
 export const sendMessage: RequestHandler = (req, res) => {
   const { id } = req.params;
   const { sender, text } = req.body || {};
-  if (!sender || !text) return res.status(400).json({ error: "sender and text required" });
-  const msg: Message = { id: String(messages.length + 1), groupId: id, sender, text, ts: Date.now() };
+  if (!sender || !text)
+    return res.status(400).json({ error: "sender and text required" });
+  const msg: Message = {
+    id: String(messages.length + 1),
+    groupId: id,
+    sender,
+    text,
+    ts: Date.now(),
+  };
   messages.push(msg);
   broadcast(id, msg);
   res.json({ success: true, message: msg });

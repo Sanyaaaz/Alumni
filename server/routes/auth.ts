@@ -35,28 +35,52 @@ const registerSchema = z.object({
 
 export const register: RequestHandler = (req, res) => {
   const body = registerSchema.safeParse(req.body);
-  if (!body.success) return res.status(400).json({ error: body.error.flatten() });
+  if (!body.success)
+    return res.status(400).json({ error: body.error.flatten() });
   const { name, email, password, role, collegeEmail } = body.data;
   const duplicate = Array.from(users.values()).find((u) => u.email === email);
   if (duplicate) return res.status(409).json({ error: "Email already exists" });
   const id = String(userCounter++);
   const passwordHash = bcrypt.hashSync(password, 10);
-  const user: User = { id, name, email, passwordHash, role, verified: role === "admin", collegeEmail };
+  const user: User = {
+    id,
+    name,
+    email,
+    passwordHash,
+    role,
+    verified: role === "admin",
+    collegeEmail,
+  };
   users.set(id, user);
   const token = tokenFor(user);
   res.json({ token, user: { id, name, email, role, verified: user.verified } });
 };
 
-const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1) });
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
 export const login: RequestHandler = (req, res) => {
   const body = loginSchema.safeParse(req.body);
-  if (!body.success) return res.status(400).json({ error: body.error.flatten() });
-  const user = Array.from(users.values()).find((u) => u.email === body.data.email);
+  if (!body.success)
+    return res.status(400).json({ error: body.error.flatten() });
+  const user = Array.from(users.values()).find(
+    (u) => u.email === body.data.email,
+  );
   if (!user) return res.status(401).json({ error: "Invalid credentials" });
   const ok = bcrypt.compareSync(body.data.password, user.passwordHash);
   if (!ok) return res.status(401).json({ error: "Invalid credentials" });
   const token = tokenFor(user);
-  res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, verified: user.verified } });
+  res.json({
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      verified: user.verified,
+    },
+  });
 };
 
 export const me: RequestHandler = (req, res) => {
@@ -67,7 +91,13 @@ export const me: RequestHandler = (req, res) => {
     const payload = jwt.verify(token, JWT_SECRET) as { sub: string };
     const user = users.get(payload.sub);
     if (!user) return res.status(404).json({ error: "User not found" });
-    res.json({ id: user.id, name: user.name, email: user.email, role: user.role, verified: user.verified });
+    res.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      verified: user.verified,
+    });
   } catch (e) {
     return res.status(401).json({ error: "Invalid token" });
   }
@@ -76,7 +106,8 @@ export const me: RequestHandler = (req, res) => {
 const verifySchema = z.object({ userId: z.string(), approved: z.boolean() });
 export const adminVerify: RequestHandler = (req, res) => {
   const body = verifySchema.safeParse(req.body);
-  if (!body.success) return res.status(400).json({ error: body.error.flatten() });
+  if (!body.success)
+    return res.status(400).json({ error: body.error.flatten() });
   const user = users.get(body.data.userId);
   if (!user) return res.status(404).json({ error: "User not found" });
   user.verified = body.data.approved;

@@ -7,7 +7,12 @@ import { listAlumni, listFacets } from "./routes/alumni";
 import { listEvents, rsvpEvent, icsForEvent } from "./routes/events";
 import { listBlogs, createBlog, upvoteBlog } from "./routes/blogs";
 import { listSessions, bookSession, createRequest } from "./routes/mentorship";
-import { listGroups, listMessages, sendMessage, streamGroup } from "./routes/groups";
+import {
+  listGroups,
+  listMessages,
+  sendMessage,
+  streamGroup,
+} from "./routes/groups";
 import { listReferrals, requestReferral } from "./routes/referrals";
 import { stats } from "./routes/stats";
 
