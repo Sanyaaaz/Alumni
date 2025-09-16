@@ -48,7 +48,18 @@ const createSchema = z.object({
 export const createBlog: RequestHandler = (req, res) => {
   const body = createSchema.safeParse(req.body);
   if (!body.success) return res.status(400).json({ error: body.error.flatten() });
-  const post: BlogPost = { id: String(blogCounter++), createdAt: new Date().toISOString(), upvotes: 0, ...body.data };
+  const d = body.data as z.infer<typeof createSchema>;
+  const post: BlogPost = {
+    id: String(blogCounter++),
+    author: d.author,
+    title: d.title,
+    company: d.company,
+    role: d.role,
+    tags: d.tags ?? [],
+    content: d.content,
+    createdAt: new Date().toISOString(),
+    upvotes: 0,
+  };
   posts.unshift(post);
   res.json({ post });
 };
